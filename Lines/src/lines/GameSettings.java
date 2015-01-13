@@ -102,7 +102,7 @@ public class GameSettings extends JFrame {
 				
 				SettingsFile.write(settings);
 				
-				GameMenu menu = new GameMenu();
+				StartGame menu = new StartGame();
 				dispose();
 				
 			}
@@ -112,7 +112,7 @@ public class GameSettings extends JFrame {
 		JButton button = new JButton("Назад в меню");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				GameMenu menu = new GameMenu();
+				StartGame menu = new StartGame();
 				dispose();
 			}
 		});

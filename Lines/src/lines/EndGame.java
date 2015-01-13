@@ -73,7 +73,7 @@ public class EndGame extends JFrame {
 		JButton backMenu = new JButton("Назад в меню");
 		backMenu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				GameMenu menu = new GameMenu();
+				StartGame menu = new StartGame();
 				dispose();
 			}
 		});

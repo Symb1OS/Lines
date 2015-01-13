@@ -15,7 +15,7 @@ import javax.swing.border.EmptyBorder;
 
 import bolls.Boll;
 
-public class GameMenu extends JFrame {
+public class StartGame extends JFrame {
 
 	private static final long serialVersionUID = -2772739529685466396L;
 	
@@ -24,10 +24,10 @@ public class GameMenu extends JFrame {
 	private JPanel contentPane;
 
 	public static void main(String[] args) {
-		GameMenu menu = new GameMenu();
+		StartGame menu = new StartGame();
 	}
 
-	public GameMenu() {
+	public StartGame() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(700, 350, 450, 300);
 		setSize(200, 200);

@@ -28,7 +28,7 @@ import bolls.PinkBoll;
 import bolls.PreviewBoll;
 import bolls.RedBoll;
 
-public class Lines extends JFrame  implements ActionListener{
+public class Lines extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = -5691603408727068871L;
 	public static final int BORDER_WIDTH = 880;
@@ -39,72 +39,70 @@ public class Lines extends JFrame  implements ActionListener{
 	public static final int START_COL_BOLLS = 10;
 	public static final int NULL_BOLL = 0;
 	public static final int STEP = 0;
-	
+
 	private PreviewBoll firstPreviewButton;
 	private PreviewBoll secondPreviewButton;
 	private PreviewBoll thirdPreviewButton;
-	
+
 	private JLabel scoreLabel = new JLabel();
 	private JPanel gamePanel;
-	
+
 	private static Boll[][] field;
-	
+
 	private static Boll selectedBollButton;
 	private static Boll moveButton;
-	
+
 	private int selectedColor;
-	
+
 	private List<Point> collectMove = new ArrayList<Point>();
 	private List<Coordinates> collectDestroy = new ArrayList<Coordinates>();
-	
+
 	private boolean bollSelected;
-	private boolean selectedSmall;
-	
+
 	private int score;
-	
-	private Timer timerMove    = new Timer(25,this);
-	private Timer timerBoll    = new Timer(40, new BollUpDown());
+
+	private Timer timerMove = new Timer(25, this);
+	private Timer timerBoll = new Timer(40, new BollUpDown());
 	private Timer timerDestroy = new Timer(50, new BollDestroyed());
-	
+
 	private boolean animation;
 	private boolean needDestroy;
 	private boolean sound;
-	
+
 	private boolean endGame;
-	
-	private int saveSmallColor;
+
 	private int selectedColumn;
 	private int selectedRow;
-	
+
 	public int getScore() {
 		return score;
 	}
-	
+
 	public void setScore() {
 		this.score += 10;
 	}
-	
-	private void defaultSettings(){
-		
+
+	private void defaultSettings() {
+
 		Settings settings = new Settings();
-		
+
 		settings.setDelay(25);
 		settings.setMusic(true);
 		settings.setSound(true);
-		
+
 		SettingsFile.write(settings);
-		
+
 		timerMove.setDelay(settings.getDelay());
 
 		Thread audio = new Thread(new BackgroundMusic());
 		audio.start();
-		
+
 		sound = true;
-		
+
 	}
-	
+
 	private void initSettings() {
-		
+
 		Settings settings = SettingsFile.read();
 
 		if (settings != null) {
@@ -127,124 +125,124 @@ public class Lines extends JFrame  implements ActionListener{
 		}
 
 	}
-	
-	public Lines(){
-		
+
+	public Lines() {
+
 		super("Lines");
-		setBounds(300,50,400,400);
+		setBounds(300, 50, 400, 400);
 		setLayout(new BorderLayout());
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		
+
 		initSettings();
-		
+
 		gamePanel = new JPanel();
 		gamePanel.setBackground(Color.LIGHT_GRAY);
 		gamePanel.setLayout(new FlowLayout());
-		
+
 		field = new Boll[MAX_ROWS][MAX_COLUMNS];
 		score = 0;
 		bollSelected = false;
-		
+
 		initStartField();
-			
+
 		for (int row = 0; row < MAX_ROWS; row++) {
 			for (int column = 0; column < MAX_COLUMNS; column++) {
 				final Boll currentButton = field[row][column];
-				currentButton.setBackground(Color.LIGHT_GRAY);;
+				currentButton.setBackground(Color.LIGHT_GRAY);
+				;
 				ActionListener actionPerformed = this;
 				currentButton.addActionListener(actionPerformed);
 				gamePanel.add(currentButton);
 			}
 		}
-		
+
 		add(gamePanel);
-		
+
 		JPanel informationPanel = new JPanel();
 		informationPanel.setBackground(Color.BLACK);
 		add(informationPanel, BorderLayout.NORTH);
 		informationPanel.setLayout(new GridLayout(0, 5, 0, 0));
-		
+
 		TimerLabel timerLabel = new TimerLabel(new java.util.Timer());
 		timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		timerLabel.setForeground(Color.RED);
 		timerLabel.setFont(new Font("Times New Roman", Font.BOLD, 60));
 		informationPanel.add(timerLabel);
-		
+
 		firstPreviewButton = new PreviewBoll();
 		firstPreviewButton.setBackground(Color.BLACK);
 		informationPanel.add(firstPreviewButton);
-		
-		secondPreviewButton =new PreviewBoll();
+
+		secondPreviewButton = new PreviewBoll();
 		secondPreviewButton.setBackground(Color.BLACK);
 		informationPanel.add(secondPreviewButton);
-		
+
 		thirdPreviewButton = new PreviewBoll();
 		thirdPreviewButton.setBackground(Color.BLACK);
 		informationPanel.add(thirdPreviewButton);
-		
+
 		scoreLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		scoreLabel.setForeground(Color.RED);
 		scoreLabel.setFont(new Font("Tahoma", Font.BOLD, 60));
 		scoreLabel.setBackground(Color.ORANGE);
 		informationPanel.add(scoreLabel);
-			
-		ScoreView statusScore  = new ScoreView();
+
+		ScoreView statusScore = new ScoreView();
 		statusScore.start();
-		
+
 		showPreviewBolls();
-		
+
 		setSize(BORDER_WIDTH, BORDER_HEIGHT);
 		setResizable(false);
 		setVisible(true);
-		
+
 	}
-	
-	//TODO
+
 	private void illsuionMove() {
-		
+
 		if (!collectMove.isEmpty()) {
-			
-			Point newCoordinateCurrentBoll  = collectMove.get(STEP);
+
+			Point newCoordinateCurrentBoll = collectMove.get(STEP);
 			int row = newCoordinateCurrentBoll.getY();
 			int column = newCoordinateCurrentBoll.getX();
-			
+
 			field[selectedRow][selectedColumn].setColor(NULL_BOLL);
-			field[selectedBollButton.getRow()][selectedBollButton.getColumn()].setColor(NULL_BOLL);
-			
+			field[selectedBollButton.getRow()][selectedBollButton.getColumn()]
+					.setColor(NULL_BOLL);
+
 			moveButton.setPosition(row, column);
 			move(selectedBollButton, moveButton);
-			
+
 			selectedBollButton = moveButton;
 			collectMove.remove(STEP);
 			repaint();
-			
-		}else{
-			
+
+		} else {
+
 			animation = false;
 			bollSelected = false;
-			
 			smallToBig();
-		    check();
+			check();
 			addInFielThirdPreviewBolls();
 			check();
 			showPreviewBolls();
 			repaint();
 			timerMove.stop();
 		}
-		
+
 	}
-	
-	private void move(Boll previous, Boll current){
-		
+
+	private void move(Boll previous, Boll current) {
+
 		int currentColor = selectedColor;
 		int previousColor = previous.getColor();
-		
+
 		field[current.getRow()][current.getColumn()].setColor(previousColor);
 		field[previous.getRow()][previous.getColumn()].setColor(currentColor);
 		repaint();
-		
+
 	}
-	
+
 	private void addNullBalls() {
 
 		for (int row = 0; row < MAX_ROWS; row++) {
@@ -253,77 +251,77 @@ public class Lines extends JFrame  implements ActionListener{
 			}
 		}
 	}
-	
-	private void newRandomBall(){
-		
+
+	private void newRandomBall() {
+
 		int randomRow;
 		int randomColumn;
 		int color;
-		
+
 		boolean add = false;
-		while (!add){
-			
+		while (!add) {
+
 			Random random = new Random();
 			randomRow = random.nextInt(MAX_ROWS);
 			randomColumn = random.nextInt(MAX_COLUMNS);
 			color = random.nextInt(4) + 1;
-			
+
 			boolean free = field[randomRow][randomColumn].getColor() == NULL_BOLL;
-			if (free){
+			if (free) {
 				field[randomRow][randomColumn].setColor(color);
 				field[randomRow][randomColumn].setSmallBoll(false);
 				repaint();
 				add = true;
 				break;
 			}
-			
+
 			add = checkEndGame();
 		}
-		
+
 	}
-	
-	private void showPreviewBolls(){
+
+	private void showPreviewBolls() {
 		Random random = new Random();
 		int color = random.nextInt(4) + 1;
 		firstPreviewButton.setColor(color);
-		
+
 		color = random.nextInt(4) + 1;
 		secondPreviewButton.setColor(color);
-		
+
 		color = random.nextInt(4) + 1;
 		thirdPreviewButton.setColor(color);
 	}
 
-	private void addInFielThirdPreviewBolls(){
-		
+	private void addInFielThirdPreviewBolls() {
+
 		newPreviewBoll(firstPreviewButton.getColor());
 		newPreviewBoll(secondPreviewButton.getColor());
 		newPreviewBoll(thirdPreviewButton.getColor());
 	}
-	
-	private void smallToBig(){
-		
+
+	private void smallToBig() {
+
 		int color;
 		for (int row = 0; row < MAX_ROWS; row++) {
 			for (int column = 0; column < MAX_COLUMNS; column++) {
-				
+
 				color = field[row][column].getColor();
 				switch (color) {
 				case Boll.SMALL_RED:
 					field[row][column].setColor(Boll.BIG_RED);
 					field[row][column].setSmallBoll(false);
 					break;
-					
+
 				case Boll.SMALL_GREEN:
 					field[row][column].setColor(Boll.BIG_GREEN);
 					field[row][column].setSmallBoll(false);
 					break;
-					
+
 				case Boll.SMALL_CYAN:
 					field[row][column].setColor(Boll.BIG_CYAN);
 					field[row][column].setSmallBoll(false);
 					break;
-					
+
 				case Boll.SMALL_PINK:
 					field[row][column].setColor(Boll.BIG_PINK);
 					field[row][column].setSmallBoll(false);
@@ -333,18 +331,18 @@ public class Lines extends JFrame  implements ActionListener{
 					break;
 				}
 			}
-			
+
 		}
 	}
-	
-	private void newPreviewBoll(int color){
-		
+
+	private void newPreviewBoll(int color) {
+
 		int randomRow;
 		int randomColumn;
-		
+
 		int newColor = 0;
 		switch (color) {
-		
+
 		case Boll.BIG_RED:
 			newColor = Boll.SMALL_RED;
 			break;
@@ -364,194 +362,211 @@ public class Lines extends JFrame  implements ActionListener{
 		default:
 			break;
 		}
-		
+
 		boolean add = false;
-		while (!add){
-			
+		while (!add) {
+
 			Random random = new Random();
 			randomRow = random.nextInt(MAX_ROWS);
 			randomColumn = random.nextInt(MAX_COLUMNS);
-			
+
 			boolean free = field[randomRow][randomColumn].getColor() == NULL_BOLL;
-			if (free){
+			if (free) {
 				field[randomRow][randomColumn].setColor(newColor);
 				field[randomRow][randomColumn].setSmallBoll(true);
 				repaint();
 				add = true;
 				break;
 			}
-			
+
 			add = checkEndGame();
 		}
 	}
-	
+
 	private boolean checkEndGame() {
-		
+
 		for (int row = 0; row < MAX_ROWS; row++) {
 			for (int column = 0; column < MAX_COLUMNS; column++) {
 				if (field[row][column].getColor() == NULL_BOLL)
 					return false;
 			}
 		}
-		
-		if (!endGame){
+
+		if (!endGame) {
 			EndGame gameOver = new EndGame(getScore());
 			dispose();
 			endGame = true;
 		}
-		
+
 		return true;
 	}
 
-	private void soundBangBoll(){
-		
-		if (sound){
+	private void soundBangBoll() {
+
+		if (sound) {
 
 			Thread bangBoll = new Thread(new ExplosionBoll());
 			bangBoll.start();
 		}
-		
+
 	}
-	
-	private void deleteFiveRow(int cntRow, int cntColumn){
-		
+
+	private void deleteFiveRow(int cntRow, int cntColumn) {
+
 		int deleteBalls = cntRow;
-		while (deleteBalls < cntRow + COLLECT){
-			
+		while (deleteBalls < cntRow + COLLECT) {
+
 			collectDestroy.add(new Coordinates(deleteBalls, cntColumn));
 			deleteBalls++;
 		}
-		
+
 		needDestroy = true;
 		setScore();
 		repaint();
 	}
-	
-	private void deleteFiveColumn(int cntRow, int cntColumn){
-		
+
+	private void deleteFiveColumn(int cntRow, int cntColumn) {
+
 		int deleteBalls = cntColumn;
-		while (deleteBalls < cntColumn + COLLECT){
-			
+		while (deleteBalls < cntColumn + COLLECT) {
+
 			collectDestroy.add(new Coordinates(cntRow, deleteBalls));
 			deleteBalls++;
 		}
-		
+
 		needDestroy = true;
 		setScore();
 		repaint();
 	}
-	
-	private void checkRow(int row,int column){
+
+	private void checkRow(int row, int column) {
 		boolean isRow;
 		boolean isBoll;
-		
+
 		isRow = row <= MAX_ROWS - COLLECT;
 		isBoll = field[row][column].getColor() != NULL_BOLL;
 
-		if(isRow && isBoll){
-			boolean fiveBallRow = field[row][column].getColor() == field[row + 1][column].getColor() &&
-					 field[row][column].getColor() == field[row + 2][column].getColor() &&
-							 field[row][column].getColor() == field[row + 3][column].getColor() &&
-									 field[row][column].getColor() == field[row + 4][column].getColor();
-			
+		if (isRow && isBoll) {
+			boolean fiveBallRow = field[row][column].getColor() == field[row + 1][column]
+					.getColor()
+					&& field[row][column].getColor() == field[row + 2][column]
+							.getColor()
+					&& field[row][column].getColor() == field[row + 3][column]
+							.getColor()
+					&& field[row][column].getColor() == field[row + 4][column]
+							.getColor();
+
 			if (fiveBallRow) {
 				deleteFiveRow(row, column);
 			}
-				
+
 		}
 	}
-	
-	private void checkColumn(int row,int column){
+
+	private void checkColumn(int row, int column) {
 		boolean isColumn;
 		boolean isBoll;
-		
-		isColumn =  column <= MAX_COLUMNS - COLLECT;
+
+		isColumn = column <= MAX_COLUMNS - COLLECT;
 		isBoll = field[row][column].getColor() != NULL_BOLL;
-		if (isColumn && isBoll){
-			boolean fiveBallColumn = field[row][column].getColor() == field[row][column + 1].getColor()
-					&& field[row][column].getColor() == field[row][column + 2].getColor()
-					&& field[row][column].getColor() == field[row][column + 3].getColor()
-					&& field[row][column].getColor() == field[row][column + 4].getColor();
-			
+		if (isColumn && isBoll) {
+			boolean fiveBallColumn = field[row][column].getColor() == field[row][column + 1]
+					.getColor()
+					&& field[row][column].getColor() == field[row][column + 2]
+							.getColor()
+					&& field[row][column].getColor() == field[row][column + 3]
+							.getColor()
+					&& field[row][column].getColor() == field[row][column + 4]
+							.getColor();
+
 			if (fiveBallColumn) {
 				deleteFiveColumn(row, column);
 			}
 		}
 	}
-	
-	private void checkUpLeftDiagonal(int row, int column){
+
+	private void checkUpLeftDiagonal(int row, int column) {
 		boolean upLeft;
 		boolean isBoll;
-		
-		upLeft =  ( (column >= COLLECT) &&  (row <= MAX_ROWS - COLLECT) );
+
+		upLeft = ((column >= COLLECT) && (row <= MAX_ROWS - COLLECT));
 		isBoll = field[row][column].getColor() != NULL_BOLL;
-		if (upLeft && isBoll){
-			boolean fiveBallUpLeftDiagonal = field[row][column].getColor() == field[row + 1][column - 1].getColor()
-					&& field[row][column].getColor() == field[row + 2][column - 2].getColor()
-					&& field[row][column].getColor() == field[row + 3][column - 3].getColor()
-					&& field[row][column].getColor() == field[row + 4][column - 4].getColor();
-			
-			if (fiveBallUpLeftDiagonal){
+		if (upLeft && isBoll) {
+			boolean fiveBallUpLeftDiagonal = field[row][column].getColor() == field[row + 1][column - 1]
+					.getColor()
+					&& field[row][column].getColor() == field[row + 2][column - 2]
+							.getColor()
+					&& field[row][column].getColor() == field[row + 3][column - 3]
+							.getColor()
+					&& field[row][column].getColor() == field[row + 4][column - 4]
+							.getColor();
+
+			if (fiveBallUpLeftDiagonal) {
 				delefeFiveUpLeftDiagonal(row, column);
 			}
-			
+
 		}
 	}
-	
-	private void checkUpRightDiagonal(int row, int column){
-		boolean upRight; 
+
+	private void checkUpRightDiagonal(int row, int column) {
+		boolean upRight;
 		boolean isBoll;
-		
-		upRight = ( (column <= MAX_COLUMNS - COLLECT) && (row <= MAX_ROWS - COLLECT) );
+
+		upRight = ((column <= MAX_COLUMNS - COLLECT) && (row <= MAX_ROWS
+				- COLLECT));
 		isBoll = field[row][column].getColor() != NULL_BOLL;
-		if(upRight && isBoll){
-			boolean fiveBollUpRightDiagonal = field[row][column].getColor() == field[row + 1][column + 1].getColor()
-					&& field[row][column].getColor() == field[row + 2][column + 2].getColor()
-					&& field[row][column].getColor() == field[row + 3][column + 3].getColor()
-					&& field[row][column].getColor() == field[row + 4][column + 4].getColor();
-			if (fiveBollUpRightDiagonal){
+		if (upRight && isBoll) {
+			boolean fiveBollUpRightDiagonal = field[row][column].getColor() == field[row + 1][column + 1]
+					.getColor()
+					&& field[row][column].getColor() == field[row + 2][column + 2]
+							.getColor()
+					&& field[row][column].getColor() == field[row + 3][column + 3]
+							.getColor()
+					&& field[row][column].getColor() == field[row + 4][column + 4]
+							.getColor();
+			if (fiveBollUpRightDiagonal) {
 				delefeFiveUpRightDiagonal(row, column);
 			}
-			
+
 		}
 	}
-	
+
 	private void delefeFiveUpLeftDiagonal(int row, int column) {
-		
+
 		int count = 0;
-		while (count < COLLECT){
-			
+		while (count < COLLECT) {
+
 			collectDestroy.add(new Coordinates(row, column));
 			row++;
 			column--;
 			count++;
 		}
-		
+
 		needDestroy = true;
 		setScore();
 		repaint();
-		
+
 	}
 
 	private void delefeFiveUpRightDiagonal(int row, int column) {
-		
+
 		int count = 0;
-		while (count < COLLECT){
-			
+		while (count < COLLECT) {
+
 			collectDestroy.add(new Coordinates(row, column));
 			row++;
 			column++;
 			count++;
 		}
-		
+
 		needDestroy = true;
 		setScore();
 		repaint();
-		
+
 	}
 
 	private void check() {
-		
+
 		for (int row = 0; row < MAX_ROWS; row++) {
 			for (int column = 0; column < MAX_COLUMNS; column++) {
 
@@ -561,12 +576,12 @@ public class Lines extends JFrame  implements ActionListener{
 				checkUpRightDiagonal(row, column);
 			}
 		}
-		
-		if (needDestroy){
+
+		if (needDestroy) {
 			timerDestroy.start();
 			soundBangBoll();
 		}
-		
+
 	}
 
 	@SuppressWarnings("unused")
@@ -579,23 +594,23 @@ public class Lines extends JFrame  implements ActionListener{
 		}
 		System.out.println();
 	}
-	
-	private void initStartField(){
-		
+
+	private void initStartField() {
+
 		addNullBalls();
-		
-		for (int startRow = 0; startRow < START_COL_BOLLS; startRow++){
+
+		for (int startRow = 0; startRow < START_COL_BOLLS; startRow++) {
 			newRandomBall();
 		}
-		
+
 	}
 
 	public static void main(String[] args) {
 
 		Lines lines = new Lines();
-		
+
 	}
-	
+
 	class ScoreView extends Thread {
 
 		private Thread gettime;
@@ -619,11 +634,12 @@ public class Lines extends JFrame  implements ActionListener{
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
-		if (animation)	illsuionMove();
+
+		if (animation)
+			illsuionMove();
 		else {
 
-			if ( e.getSource() instanceof Boll ){
+			if (e.getSource() instanceof Boll) {
 				moveButton = (Boll) e.getSource();
 			}
 
@@ -639,70 +655,64 @@ public class Lines extends JFrame  implements ActionListener{
 					selectedBollButton = moveButton;
 					selectedColor = selectedBollButton.getColor();
 					System.out.println("selectedColor" + selectedColor);
-					System.out.println("это шар " + selectedBollButton.getRow() + " " + selectedBollButton.getColumn());
+					System.out.println("это шар " + selectedBollButton.getRow()	+ " " + selectedBollButton.getColumn());
 				}
 
 				if ((bollSelected && !isBoll) || (bollSelected && moveButton.isSmallBoll())) {
-					
+
 					timerBoll.stop();
-					
+
 					int moveRow = moveButton.getRow();
 					int moveColumn = moveButton.getColumn();
 
 					selectedRow = selectedBollButton.getRow();
 					selectedColumn = selectedBollButton.getColumn();
 
-					System.out.println("Откуда " + selectedRow + " " + selectedColumn);
-					System.out.println("Куда надо переместить " + moveRow + " " + moveColumn);
-					
-					//TODO
 					boolean isSmal = (field[moveRow][moveColumn].isSmallBoll());
 					if (isSmal) {
-
-						selectedSmall = true;
-						saveSmallColor = field[moveRow][moveColumn].getColor();
 						field[moveRow][moveColumn].setColor(NULL_BOLL);
 						field[moveRow][moveColumn].setSmallBoll(false);
-						
+
 					}
-					
+
 					IntField labirint = new IntField(field);
 					PathFinder pathFinder = new PathFinder(labirint.getField());
-					Point start = new Point(selectedColumn,selectedRow); //Hачальная точка
-			        Point end = new Point(moveColumn, moveRow);	
-			        
-					Point[] path = pathFinder.find(start,end);
-					
-			        printField();
-			        
-					boolean isOpenPath = (path != null); 
-			        if (isOpenPath) {
+					Point start = new Point(selectedColumn, selectedRow); // Hачальная
+																			// точка
+					Point end = new Point(moveColumn, moveRow);
+
+					Point[] path = pathFinder.find(start, end);
+
+					printField();
+
+					boolean isOpenPath = (path != null);
+					if (isOpenPath) {
 						animation = true;
 						bollSelected = false;
 						collectMove.addAll(Arrays.asList(path));
 						timerMove.start();
 					}
-			        
+
 				}
 			}
 		}
 	}
-	
-	class BollDestroyed implements ActionListener{
-		
+
+	class BollDestroyed implements ActionListener {
+
 		private ImageIcon image;
-		
+
 		private int END = 9;
-		
+
 		private int count = 0;
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
 			if (needDestroy) {
-				
+
 				switch (selectedColor) {
-				
+
 				case Boll.BIG_RED:
 					destroyRed();
 					break;
@@ -723,7 +733,7 @@ public class Lines extends JFrame  implements ActionListener{
 					break;
 				}
 			}
-	
+
 		}
 
 		private void destroyRed() {
@@ -734,7 +744,7 @@ public class Lines extends JFrame  implements ActionListener{
 			}
 
 			endDestroy();
-			
+
 		}
 
 		private void destroyGreen() {
@@ -749,26 +759,27 @@ public class Lines extends JFrame  implements ActionListener{
 		}
 
 		private void destroyCyan() {
-			
+
 			for (Coordinates cord : collectDestroy) {
 				image = new ImageIcon(CyanBoll.destroy[count]);
 				field[cord.getX()][cord.getY()].setIcon(image);
 			}
-			
+
 			endDestroy();
-			
+
 		}
 
 		private void endDestroy() {
-			if (count == END){
+			if (count == END) {
 				needDestroy = false;
 				timerDestroy.stop();
 				count = 0;
 				for (Coordinates cord : collectDestroy) {
-					field[cord.getX()][cord.getY()].setColor(NULL_BOLL);;
+					field[cord.getX()][cord.getY()].setColor(NULL_BOLL);
+					;
 				}
 			}
-			
+
 			count++;
 		}
 
@@ -780,20 +791,20 @@ public class Lines extends JFrame  implements ActionListener{
 			}
 
 			endDestroy();
-			
+
 		}
-		
+
 	}
-	
+
 	class BollUpDown implements ActionListener {
-		
+
 		public static final String PATH = "resources/animated-bolls/";
-		
+
 		private static final int END_UP = 0;
 		private static final int END_DOWN = 6;
-	
+
 		private ImageIcon image;
-		
+
 		private int count = 0;
 
 		private boolean needDown;
@@ -801,13 +812,13 @@ public class Lines extends JFrame  implements ActionListener{
 		private boolean needUp;
 
 		private boolean startAnimated = true;
-		
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
-			if (bollSelected){
+
+			if (bollSelected) {
 				switch (selectedColor) {
-				
+
 				case Boll.BIG_RED:
 					illusionRed();
 					break;
@@ -828,7 +839,7 @@ public class Lines extends JFrame  implements ActionListener{
 					System.out.println("АНАЛИТИКА СЛАМАЛАСЬ((((");
 					break;
 				}
-				
+
 			}
 		}
 
@@ -836,27 +847,27 @@ public class Lines extends JFrame  implements ActionListener{
 
 			image = new ImageIcon(PinkBoll.animation[count]);
 			selectedBollButton.setIcon(image);
-			
+
 			changeCount();
-			
+
 		}
 
 		private void illusionCyan() {
-			
+
 			image = new ImageIcon(CyanBoll.animation[count]);
 			selectedBollButton.setIcon(image);
-			
+
 			changeCount();
-			
+
 		}
 
 		private void illusionGreen() {
-			
+
 			image = new ImageIcon(GreenBoll.animation[count]);
 			selectedBollButton.setIcon(image);
-			
+
 			changeCount();
-			
+
 		}
 
 		private void illusionRed() {
@@ -866,28 +877,28 @@ public class Lines extends JFrame  implements ActionListener{
 
 			changeCount();
 		}
-		
-	private void changeCount() {
-			
-			if (count == END_DOWN){
+
+		private void changeCount() {
+
+			if (count == END_DOWN) {
 				startAnimated = false;
 				needDown = true;
 				needUp = false;
-			
-			}else if (count == END_UP){
+
+			} else if (count == END_UP) {
 				needDown = false;
 				needUp = true;
 			}
-		
-			if (startAnimated){
+
+			if (startAnimated) {
 				count++;
 			}
-			
-			if (needUp){
+
+			if (needUp) {
 				count++;
 			}
-			
-			if (needDown){
+
+			if (needDown) {
 				count--;
 			}
 		}
